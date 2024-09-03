@@ -1,3 +1,6 @@
+mod lox;
+mod token;
+
 fn main() {
-    println!("Hello, world!");
+    lox::main();
 }
