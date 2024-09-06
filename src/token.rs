@@ -1,5 +1,5 @@
-#[derive(Debug)]
-enum TokenType {
+#[derive(Debug, PartialEq)]
+pub(crate) enum TokenType<'a> {
     // Single char
     LeftParen,
     RightParen,
@@ -25,8 +25,8 @@ enum TokenType {
 
     // Literals
     Identifier,
-    String,
-    NUMBER,
+    String(&'a str),
+    Number(f32),
 
     // Keywords
     And,
@@ -46,18 +46,31 @@ enum TokenType {
     Var,
     While,
 
+    // Ignored
+    Comment,
+    Whitespace,
+
     Eof,
+
+    Error,
 }
 
-pub struct Token {
-    token_type: TokenType,
-    lexeme: String,
-    literal: String,
-    line: i32,
+pub(crate) struct Token<'a> {
+    token_type: TokenType<'a>,
+    lexeme: &'a str,
+    line: usize,
 }
 
-impl Token {
-    fn to_string(&self) -> String {
-        format!("{:?} {} {}", self.token_type, self.lexeme, self.literal)
+impl<'a> Token<'a> {
+    pub fn new(token_type: TokenType<'a>, lexeme: &'a str, line: usize) -> Self {
+        Token {
+            token_type,
+            lexeme,
+            line,
+        }
+    }
+
+    pub fn to_string(&self) -> String {
+        format!("Token: {:?}\nLexeme: {}\n", self.token_type, self.lexeme)
     }
 }

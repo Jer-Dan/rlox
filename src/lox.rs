@@ -1,12 +1,16 @@
+use crate::scanner::Scanner;
 use std::{env, fs, io};
 
 pub(crate) fn main() {
     let args: Vec<String> = env::args().collect();
+    println!("{:?}", args);
+
+    let lox = Lox::new();
 
     match args.len() {
-        2.. => panic!("Usage: jlox [script]"),
-        1 => Lox::run_file(&args[0]),
-        _ => Lox::run_prompt(),
+        3.. => panic!("Usage: jlox [script]"),
+        2 => lox.run_file(&args[1]),
+        _ => lox.run_prompt(),
     }
 }
 
@@ -15,9 +19,13 @@ struct Lox {
 }
 
 impl Lox {
-    fn run_file(path: &str) {
+    fn new() -> Self {
+        Lox { had_error: false }
+    }
+
+    fn run_file(&self, path: &str) {
         let file_contents = fs::read_to_string(path).unwrap();
-        Self::run(&file_contents);
+        self.run(&file_contents);
     }
 
     fn run_prompt(&self) {
@@ -41,11 +49,13 @@ impl Lox {
     }
 
     fn run(&self, source: &str) {
-        let scanner: Scanner = Scanner::new(source);
-        let tokens: Vec<Token> = scanner.scan_tokens();
+        println!("{}", source);
 
-        for token in tokens {
-            println!("{:?}", token);
+        let mut scanner = Scanner::new(source);
+        scanner.scan_tokens();
+
+        for token in scanner.tokens() {
+            println!("{}", token.to_string());
         }
     }
 
