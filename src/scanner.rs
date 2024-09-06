@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::token::{Token, TokenType};
 
 pub(crate) struct Scanner<'a> {
@@ -6,6 +8,7 @@ pub(crate) struct Scanner<'a> {
     start: usize,
     current: usize,
     line: usize,
+    keywords_map: HashMap<&'a str, TokenType<'a>>,
 }
 
 impl<'a> Scanner<'a> {
@@ -16,7 +19,33 @@ impl<'a> Scanner<'a> {
             start: 0,
             current: 0,
             line: 1,
+
+            keywords_map: HashMap::from([
+                ("and", TokenType::And),
+                ("class", TokenType::Class),
+                ("else", TokenType::Else),
+                ("false", TokenType::False),
+                ("for", TokenType::For),
+                ("fun", TokenType::Fun),
+                ("if", TokenType::If),
+                ("nil", TokenType::Nil),
+                ("or", TokenType::Or),
+                ("print", TokenType::Print),
+                ("return", TokenType::Return),
+                ("super", TokenType::Super),
+                ("this", TokenType::This),
+                ("true", TokenType::True),
+                ("var", TokenType::Var),
+                ("while", TokenType::While),
+            ]),
         }
+    }
+
+    fn get_keyword_tokentype(&self, raw: &'a str) -> TokenType<'a> {
+        self.keywords_map
+            .get(raw)
+            .unwrap_or(&TokenType::Identifier(raw))
+            .clone()
     }
 
     pub fn tokens(&self) -> &Vec<Token<'a>> {
@@ -94,6 +123,7 @@ impl<'a> Scanner<'a> {
                 }
                 '"' => TokenType::String(self.consume_str()),
                 _ if c.is_digit(10) => TokenType::Number(self.consume_num()),
+                _ if c.is_alphabetic() => self.consume_identifier(),
                 _ => TokenType::Error,
             };
 
@@ -183,5 +213,13 @@ impl<'a> Scanner<'a> {
         self.source[self.start..self.current]
             .parse::<f32>()
             .unwrap()
+    }
+
+    fn consume_identifier(&mut self) -> TokenType<'a> {
+        while self.peek().is_alphanumeric() {
+            self.advance();
+        }
+
+        self.get_keyword_tokentype(&self.source[self.start..self.current])
     }
 }

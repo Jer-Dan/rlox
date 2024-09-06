@@ -3,3 +3,4 @@
 !*+-= <= == == = <> //morar comment
 "here's  a string" //the string
 45 "hi thet 23.65" 56.09
+var variable = 54.3 //this is the thing

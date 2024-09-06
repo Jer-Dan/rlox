@@ -1,4 +1,4 @@
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub(crate) enum TokenType<'a> {
     // Single char
     LeftParen,
@@ -13,7 +13,7 @@ pub(crate) enum TokenType<'a> {
     Slash,
     Star,
 
-    // 1/2 char
+    // 1-2 char
     Bang,
     BangEqual,
     Equal,
@@ -24,7 +24,7 @@ pub(crate) enum TokenType<'a> {
     LessEqual,
 
     // Literals
-    Identifier,
+    Identifier(&'a str),
     String(&'a str),
     Number(f32),
 
