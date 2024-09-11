@@ -56,9 +56,9 @@ pub(crate) enum TokenType<'a> {
 }
 
 pub(crate) struct Token<'a> {
-    token_type: TokenType<'a>,
-    lexeme: &'a str,
-    line: usize,
+    pub token_type: TokenType<'a>,
+    pub lexeme: &'a str,
+    pub line: usize,
 }
 
 impl<'a> Token<'a> {
