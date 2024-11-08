@@ -1,6 +1,4 @@
 // Comment
-(( )){} //another Comment
-!*+-= <= == == = <> //morar comment
+(3.97 + 4) / (9+3.14)*76 //another Comment
 "here's  a string" //the string
-45 "hi thet 23.65" 56.09
-var variable = 54.3 //this is the thing
+54.3 / 45 * 76.09 //this is the thing

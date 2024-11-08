@@ -2,18 +2,38 @@ use crate::token::Token;
 
 static INDENT: usize = 4;
 
-trait Expr<'a> {
+#[derive(Debug)]
+pub enum Expression<'a> {
+    Binary(Binary<'a>),
+    Grouping(Grouping<'a>),
+    Literal(Literal<'a>),
+    Unary(Unary<'a>),
+}
+
+impl<'a> Expression<'a> {
+    pub fn print(&self, indent: usize) {
+        match self {
+            Self::Binary(b) => b.print(indent),
+            Self::Grouping(g) => g.print(indent),
+            Self::Literal(l) => l.print(indent),
+            Self::Unary(u) => u.print(indent),
+        }
+    }
+}
+
+pub trait Expr<'a> {
     fn print(&self, indent: usize);
 }
 
-pub struct Binary<'a, T: Expr<'a>> {
-    left: &'a T,
-    operator: &'a Token<'a>,
-    right: &'a T,
+#[derive(Debug)]
+pub struct Binary<'a> {
+    left: Box<Expression<'a>>,
+    operator: Token<'a>,
+    right: Box<Expression<'a>>,
 }
 
-impl<'a, T: Expr<'a>> Binary<'a, T> {
-    fn new(left: &'a T, operator: &'a Token, right: &'a T) -> Self {
+impl<'a> Binary<'a> {
+    pub fn new(left: Box<Expression<'a>>, operator: Token<'a>, right: Box<Expression<'a>>) -> Self {
         Binary {
             left,
             operator,
@@ -22,12 +42,13 @@ impl<'a, T: Expr<'a>> Binary<'a, T> {
     }
 }
 
-impl<'a, T: Expr<'a>> Expr<'a> for Binary<'a, T> {
+impl<'a> Expr<'a> for Binary<'a> {
     fn print(&self, indent: usize) {
         println!(
-            "{}Binary:\n{}Operator: {:?}",
+            "{}Binary:\n{}Operator:\n{}{:?}",
             " ".repeat(indent),
             " ".repeat(indent + INDENT),
+            " ".repeat(indent + INDENT + INDENT),
             self.operator.token_type
         );
         println!("{}Left: ", " ".repeat(indent + INDENT));
@@ -38,23 +59,25 @@ impl<'a, T: Expr<'a>> Expr<'a> for Binary<'a, T> {
     }
 }
 
-pub struct Grouping<'a, T: Expr<'a>> {
-    expression: &'a T,
+#[derive(Debug)]
+pub struct Grouping<'a> {
+    expression: Box<Expression<'a>>,
 }
 
-impl<'a, T: Expr<'a>> Grouping<'a, T> {
-    pub fn new(expression: &'a T) -> Self {
+impl<'a> Grouping<'a> {
+    pub fn new(expression: Box<Expression<'a>>) -> Self {
         Grouping { expression }
     }
 }
 
-impl<'a, T: Expr<'a>> Expr<'a> for Grouping<'a, T> {
+impl<'a> Expr<'a> for Grouping<'a> {
     fn print(&self, indent: usize) {
         println!("{}Expression:", " ".repeat(indent));
         self.expression.print(indent + INDENT);
     }
 }
 
+#[derive(Debug)]
 pub struct Literal<'a> {
     value: Token<'a>,
 }
@@ -71,30 +94,31 @@ impl<'a> Expr<'a> for Literal<'a> {
             "{}Literal:\n{}{}",
             " ".repeat(indent),
             " ".repeat(indent + INDENT),
-            self.value.to_string()
+            self.value.to_string(indent + INDENT)
         );
     }
 }
 
-pub struct Unary<'a, T: Expr<'a>> {
+#[derive(Debug)]
+pub struct Unary<'a> {
     operator: Token<'a>,
-    right: &'a T,
+    right: Box<Expression<'a>>,
 }
 
-impl<'a, T: Expr<'a>> Unary<'a, T> {
-    pub fn new(operator: Token<'a>, right: &'a T) -> Self {
+impl<'a> Unary<'a> {
+    pub fn new(operator: Token<'a>, right: Box<Expression<'a>>) -> Self {
         Unary { operator, right }
     }
 }
 
-impl<'a, T: Expr<'a>> Expr<'a> for Unary<'a, T> {
+impl<'a> Expr<'a> for Unary<'a> {
     fn print(&self, indent: usize) {
         println!(
             "{}Unary:\n{}Operator:\n{}{}\n{}Right:",
             " ".repeat(indent),
             " ".repeat(indent + INDENT),
             " ".repeat(indent + INDENT + INDENT),
-            self.operator.to_string(),
+            self.operator.to_string(indent + INDENT + INDENT),
             " ".repeat(indent + INDENT)
         );
         self.right.print(indent + INDENT + INDENT);

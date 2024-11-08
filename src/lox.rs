@@ -1,11 +1,15 @@
-use crate::scanner::Scanner;
+use crate::{
+    parser::Parser,
+    scanner::Scanner,
+    token::{Token, TokenType},
+};
 use std::{env, fs, io};
 
 pub(crate) fn main() {
     let args: Vec<String> = env::args().collect();
     println!("{:?}", args);
 
-    let lox = Lox::new();
+    let mut lox = Lox::new();
 
     match args.len() {
         3.. => panic!("Usage: jlox [script]"),
@@ -14,7 +18,7 @@ pub(crate) fn main() {
     }
 }
 
-struct Lox {
+pub struct Lox {
     had_error: bool,
 }
 
@@ -23,12 +27,12 @@ impl Lox {
         Lox { had_error: false }
     }
 
-    fn run_file(&self, path: &str) {
+    fn run_file(&mut self, path: &str) {
         let file_contents = fs::read_to_string(path).unwrap();
         self.run(&file_contents);
     }
 
-    fn run_prompt(&self) {
+    fn run_prompt(&mut self) {
         loop {
             print!("> ");
 
@@ -48,23 +52,26 @@ impl Lox {
         }
     }
 
-    fn run(&self, source: &str) {
+    fn run(&mut self, source: &str) {
         println!("{}", source);
 
         let mut scanner = Scanner::new(source);
         scanner.scan_tokens();
 
-        for token in scanner.tokens() {
-            println!("{}", token.to_string());
+        let mut parser = Parser::new(self, scanner.tokens());
+        let expression = parser.parse().unwrap();
+        expression.print(0);
+    }
+
+    pub fn error(&mut self, token: Token, message: &str) {
+        match token.token_type {
+            TokenType::Eof => self.report(token.line, " at end", message),
+            _ => self.report(token.line, &format!(" at '{}'", token.lexeme), message),
         }
     }
 
-    fn error(&mut self, line: i32, message: &str) {
-        self.report(line, "", message);
-    }
-
-    fn report(&mut self, line: i32, where_err: &str, message: &str) {
+    fn report(&mut self, line: usize, where_err: &str, message: &str) {
         self.had_error = true;
-        panic!("[line {}] Error{}: {}", line, where_err, message);
+        eprintln!("[line {}] Error{}: {}", line, where_err, message);
     }
 }

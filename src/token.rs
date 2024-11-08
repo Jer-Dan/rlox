@@ -55,6 +55,7 @@ pub(crate) enum TokenType<'a> {
     Error,
 }
 
+#[derive(Clone, Debug)]
 pub(crate) struct Token<'a> {
     pub token_type: TokenType<'a>,
     pub lexeme: &'a str,
@@ -70,7 +71,12 @@ impl<'a> Token<'a> {
         }
     }
 
-    pub fn to_string(&self) -> String {
-        format!("Token: {:?}\nLexeme: {}\n", self.token_type, self.lexeme)
+    pub fn to_string(&self, indent: usize) -> String {
+        format!(
+            "Token: {:?}\n{}Lexeme: {}\n",
+            self.token_type,
+            " ".repeat(indent),
+            self.lexeme
+        )
     }
 }

@@ -1,7 +1,6 @@
-mod ast_printer;
 mod expr;
-mod generate_ast;
 mod lox;
+mod parser;
 mod scanner;
 mod token;
 
